@@ -8,22 +8,32 @@
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     body {
-      background: #f0f0f0;
-      padding: 30px 0;
+      margin: 0;
+      background: #e0e0e0;
+      font-family: 'Noto Sans KR', sans-serif;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #capture-area-wrapper {
+      background: #ffffff;
+      width: 500px;
+      box-sizing: border-box;
+      margin-top: 30px;
+      margin-bottom: 30px;
+      position: relative;
     }
 
     #capture-area {
-      background: white;
-      width: 600px;
-      padding: 0 50px;
-      box-sizing: border-box;
+      width: 420px;
+      margin: 20px auto;
+      padding: 0;
     }
 
-    h1 {
+    h2 {
       text-align: center;
-      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-size: clamp(1rem, 4vw, 1rem);
       margin-bottom: 30px;
     }
 
@@ -79,50 +89,134 @@
 
     footer {
       text-align: center;
-      margin-top: 40px;
+      margin-top: 22px;
     }
 
     footer img {
-      width: 150px;
+      width: 100px;
       height: auto;
     }
 
-    .capture-btn {
-      display: block;
-      margin: 30px auto;
-      padding: 12px 20px;
+    .controls {
+      margin: 10px auto 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #e0e0e0;
+      padding-bottom: 40px;
+    }
+
+    .direction-buttons {
+      display: grid;
+      grid-template-areas:
+        ". top ."
+        "left . right"
+        ". bottom .";
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .direction-buttons button {
+      width: 80px;
+      padding: 6px 12px;
       font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #ccc;
+    }
+
+    .direction-buttons button.active {
+      background: #007bff;
+      color: white;
+    }
+
+    .adjust-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .adjust-buttons button,
+    .capture-btn {
+      padding: 6px 12px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .capture-btn {
       background: #015DA9;
       color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="capture-area">
-    <h1>♥♥♥고령·성주·칠곡 알리미♥♥♥</h1>
-    <div class="schedule">
-      <div class="schedule-header">&lt; 지역위원장 일정 &gt;</div>
-      <div class="schedule-date">5월 15일(목) 유세 일정</div>
-      <ul class="schedule-list">
-        <li><span class="time">07:00</span>다산면 출근 인사</li>
-        <li><span class="time">10:00</span>다산면 골목골목경청투어</li>
-        <li><span class="time">17:00</span>성산면 퇴근 인사</li>
-      </ul>
+  <div id="capture-area-wrapper" style="padding-top:30px; padding-bottom:30px; padding-left:25px; padding-right:25px;">
+    <div id="capture-area">
+     <!-- <h1>♥♥♥고령·성주·칠곡 알리미♥♥♥</h1> */  --> 
+      <div class="schedule">
+        <div class="schedule-header">&lt; 지역위원장 일정 &gt;</div>
+        <div class="schedule-date">5월 15일(목) 유세 일정</div>
+        <ul class="schedule-list">
+          <li><span class="time">07:00</span>다산면 출근 인사</li>
+          <li><span class="time">10:00</span>다산면 골목골목경청투어</li>
+          <li><span class="time">17:00</span>성산면 퇴근 인사</li>
+        </ul>
+      </div>
+      <footer>
+        <img src="logo.png" alt="더불어민주당 경북도당 로고"/>
+        <h2>고령ㆍ성주ㆍ칠곡 지역위원회</h2>
+      </footer>
     </div>
-    <footer>
-      <img src="logo.png" alt="더불어민주당 경북도당 로고"/>
-      <h2>고령ㆍ성주ㆍ칠곡 지역위원회</h2>
-    </footer>
   </div>
-  <button class="capture-btn" onclick="capturePage()">이미지로 만들기</button>
+
+  <div class="controls">
+    <div class="direction-buttons">
+      <button data-dir="top" style="grid-area: top;">위</button>
+      <button data-dir="bottom" style="grid-area: bottom;">아래</button>
+      <button data-dir="left" style="grid-area: left;">좌</button>
+      <button data-dir="right" style="grid-area: right;">우</button>
+    </div>
+    <div class="adjust-buttons">
+      <button onclick="adjustMargin('increase')">늘리기</button>
+      <button onclick="adjustMargin('decrease')">줄이기</button>
+    </div>
+    <button class="capture-btn" onclick="capturePage()">이미지로 만들기</button>
+  </div>
 
   <script>
+    let selectedDirection = null;
+    const wrapper = document.getElementById("capture-area-wrapper");
+    const defaultMargins = { top: 30, bottom: 30, left: 25, right: 25 };
+    const margins = { ...defaultMargins };
+
+    document.querySelectorAll(".direction-buttons button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedDirection = btn.dataset.dir;
+        document.querySelectorAll(".direction-buttons button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    function adjustMargin(action) {
+      if (!selectedDirection) return;
+      const delta = action === "increase" ? 10 : -10;
+      margins[selectedDirection] = Math.max(0, margins[selectedDirection] + delta);
+      updateWrapperStyle();
+    }
+
+    function updateWrapperStyle() {
+      wrapper.style.paddingTop = margins.top + "px";
+      wrapper.style.paddingBottom = margins.bottom + "px";
+      wrapper.style.paddingLeft = margins.left + "px";
+      wrapper.style.paddingRight = margins.right + "px";
+    }
+
     async function capturePage() {
-      const area = document.getElementById('capture-area');
-      const canvas = await html2canvas(area);
+      const canvas = await html2canvas(wrapper);
       const link = document.createElement('a');
       link.download = 'schedule_capture.png';
       link.href = canvas.toDataURL();
