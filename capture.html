@@ -5,7 +5,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>일정 캡처</title>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js">
+    function updateWidths() {
+      scheduleEl.style.width = scheduleWidth + "px";
+      captureArea.style.width = (scheduleWidth + 80) + "px";
+      wrapper.style.width = (scheduleWidth + 130) + "px";
+    }
+</script>
+
   <style>
     body {
       margin: 0;
@@ -23,6 +30,7 @@
       margin-top: 30px;
       margin-bottom: 30px;
       position: relative;
+      padding: 30px 25px;
     }
 
     #capture-area {
@@ -43,6 +51,9 @@
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 40px;
+      width: 420px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .schedule-header {
@@ -63,6 +74,7 @@
       padding: 4px 12px;
       font-size: 0.95rem;
       font-style: italic;
+      letter-spacing: 1px;
       border-radius: 12px;
       margin: 0 auto 20px;
       width: max-content;
@@ -154,9 +166,8 @@
   </style>
 </head>
 <body>
-  <div id="capture-area-wrapper" style="padding-top:30px; padding-bottom:30px; padding-left:25px; padding-right:25px;">
+  <div id="capture-area-wrapper">
     <div id="capture-area">
-     <!-- <h1>♥♥♥고령·성주·칠곡 알리미♥♥♥</h1> */  --> 
       <div class="schedule">
         <div class="schedule-header">&lt; 지역위원장 일정 &gt;</div>
         <div class="schedule-date">5월 15일(목) 유세 일정</div>
@@ -174,24 +185,37 @@
   </div>
 
   <div class="controls">
+    <div class="table-width-controls" style="margin-top: 10px;">
+      <button onclick="adjustTableWidth('increase')">테이블 폭 늘리기</button>
+      <button onclick="adjustTableWidth('decrease')">테이블 폭 줄이기</button>
+    </div>
+
     <div class="direction-buttons">
       <button data-dir="top" style="grid-area: top;">위</button>
       <button data-dir="bottom" style="grid-area: bottom;">아래</button>
       <button data-dir="left" style="grid-area: left;">좌</button>
       <button data-dir="right" style="grid-area: right;">우</button>
     </div>
+
     <div class="adjust-buttons">
       <button onclick="adjustMargin('increase')">늘리기</button>
       <button onclick="adjustMargin('decrease')">줄이기</button>
     </div>
-    <button class="capture-btn" onclick="capturePage()">이미지로 만들기</button>
+
+    <button class="capture-btn" onclick="resetAll()">초기화</button>
+    <button class="capture-btn" onclick="capturePage()">이미지로 저장하기</button>
   </div>
 
   <script>
     let selectedDirection = null;
     const wrapper = document.getElementById("capture-area-wrapper");
+    const captureArea = document.getElementById("capture-area");
+    const scheduleEl = document.querySelector('.schedule');
+
     const defaultMargins = { top: 30, bottom: 30, left: 25, right: 25 };
     const margins = { ...defaultMargins };
+
+    let scheduleWidth = 420;
 
     document.querySelectorAll(".direction-buttons button").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -206,6 +230,7 @@
       const delta = action === "increase" ? 10 : -10;
       margins[selectedDirection] = Math.max(0, margins[selectedDirection] + delta);
       updateWrapperStyle();
+    updateWidths();
     }
 
     function updateWrapperStyle() {
@@ -215,6 +240,27 @@
       wrapper.style.paddingRight = margins.right + "px";
     }
 
+    function adjustTableWidth(action) {
+      const delta = action === "increase" ? 20 : -20;
+      scheduleWidth = Math.max(300, scheduleWidth + delta);
+      scheduleEl.style.width = scheduleWidth + "px";
+      captureArea.style.width = (scheduleWidth + 80) + "px";
+      wrapper.style.width = (scheduleWidth + 130) + "px";
+    }
+
+    function resetAll() {
+      updateWidths();
+      Object.assign(margins, defaultMargins);
+      scheduleWidth = 420;
+      scheduleEl.style.width = "420px";
+      captureArea.style.width = "500px";
+      wrapper.style.width = "550px";
+      updateWrapperStyle();
+    updateWidths();
+      document.querySelectorAll(".direction-buttons button").forEach(b => b.classList.remove("active"));
+      selectedDirection = null;
+    }
+
     async function capturePage() {
       const canvas = await html2canvas(wrapper);
       const link = document.createElement('a');
@@ -222,6 +268,16 @@
       link.href = canvas.toDataURL();
       link.click();
     }
-  </script>
+
+    updateWrapperStyle();
+    updateWidths();
+  
+    function updateWidths() {
+      scheduleEl.style.width = scheduleWidth + "px";
+      captureArea.style.width = (scheduleWidth + 80) + "px";
+      wrapper.style.width = (scheduleWidth + 130) + "px";
+    }
+</script>
+
 </body>
 </html>
